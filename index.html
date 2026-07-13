@@ -1856,11 +1856,23 @@
         <h2 class="section-title">Thoughts &amp; Insights</h2>
         <p class="thoughts-intro">
             Ideas I'm exploring, lessons from building AI systems, and reflections on creativity and engineering.
-            Click any card to read the full thought — or write your own below.
+            Click any card to read the full thought.
         </p>
 
-        <!-- Live post composer -->
-        <div class="thought-composer">
+        <!-- Admin-only composer — hidden from visitors -->
+        <div id="admin-gate" style="margin-bottom:1.5rem;">
+            <button onclick="toggleAdminMode()"
+                    style="background:none;border:1px solid var(--border);border-radius:8px;
+                           padding:0.5rem 1rem;color:var(--text-muted);font-size:0.78rem;
+                           cursor:pointer;font-family:inherit;transition:all 0.2s;"
+                    id="admin-gate-btn"
+                    onmouseover="this.style.borderColor='var(--mint)';this.style.color='var(--mint)'"
+                    onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+                🔐 Admin
+            </button>
+        </div>
+
+        <div class="thought-composer" id="thought-composer-panel" style="display:none;">
             <div class="composer-label">✏️ Post a New Thought</div>
             <div class="composer-row">
                 <input class="composer-input" id="composer-title" placeholder="Thought title…" maxlength="120">
@@ -1875,7 +1887,15 @@
                        style="display:none;max-width:160px;flex-shrink:0;" maxlength="30">
             </div>
             <textarea class="composer-textarea" id="composer-body" placeholder="Share your idea, insight, or observation…"></textarea>
-            <button class="composer-btn" onclick="postThought()">Publish Thought →</button>
+            <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                <button class="composer-btn" onclick="postThought()">Publish Thought →</button>
+                <button onclick="toggleAdminMode()"
+                        style="background:none;border:1px solid rgba(248,113,113,0.3);border-radius:6px;
+                               padding:0.6rem 1rem;color:#f87171;font-size:0.82rem;
+                               cursor:pointer;font-family:inherit;">
+                    ✕ Close
+                </button>
+            </div>
         </div>
 
         <div class="thoughts-grid" id="thoughts-grid">
@@ -1939,31 +1959,15 @@
 
     <!-- ══ POSTS & DOWNLOADS ══ -->
     <section id="posts" class="container">
-        <h2 class="section-title">Posts &amp; Downloads</h2>
+        <h2 class="section-title">Resources &amp; Downloads</h2>
         <p style="color:var(--text-muted);max-width:680px;margin-bottom:3rem;font-size:0.97rem;line-height:1.75;">
-            Upload files directly — share research notes, project decks, code samples, or any resource.
-            They become instantly downloadable. Your activity feed updates live.
+            Useful resources, notes, and code samples — freely available to download.
         </p>
         <div class="posts-layout">
 
-            <!-- Upload + File List -->
+            <!-- Downloads only — no upload UI for visitors -->
             <div>
-                <div class="upload-panel">
-                    <div class="upload-panel-title">📤 Share a File</div>
-                    <div class="upload-panel-sub">Drop any file here — PDF, DOCX, images, code, or presentations. It will appear in the downloadable list instantly.</div>
-                    <div class="upload-notice">
-                        <span class="upload-notice-icon">ℹ️</span>
-                        <span><strong>How uploads work:</strong> Files you upload here are stored in your browser session only — they are visible <strong>only to you</strong> in this tab. Pre-loaded files (resume, placeholders) are always visible to all visitors. To share files publicly, host them on GitHub or Google Drive and link them in the placeholders above.</span>
-                    </div>
-                    <div class="upload-drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-                        <div class="upload-icon">☁️</div>
-                        <div class="upload-drop-text">Drag &amp; drop a file here, or <span>browse to upload</span></div>
-                    </div>
-                    <div class="upload-type-hint">PDF · DOCX · PPTX · PNG · JPG · PY · TXT and more</div>
-                    <input type="file" id="file-input" multiple>
-                </div>
-
-                <div class="posted-files-list" id="posted-files-list">
+                <div class="posted-files-list" id="posted-files-list" style="margin-top:0;">
                     <div class="posted-file-item">
                         <div class="file-type-icon doc">📄</div>
                         <div class="file-info">
@@ -1976,19 +1980,18 @@
                         <div class="file-type-icon pdf">📕</div>
                         <div class="file-info">
                             <div class="file-name">AI_Engineering_Notes_RAG_LangGraph.pdf</div>
-                            <div class="file-size">Study Notes · PDF</div>
+                            <div class="file-size">Study Notes · PDF &nbsp;·&nbsp; Coming Soon</div>
                         </div>
-                        <span class="file-dl-btn" style="opacity:0.45;cursor:default;">Coming Soon</span>
+                        <span class="file-dl-btn" style="opacity:0.4;cursor:default;pointer-events:none;">Coming Soon</span>
                     </div>
                     <div class="posted-file-item">
                         <div class="file-type-icon code">🐍</div>
                         <div class="file-info">
                             <div class="file-name">fastapi_rag_boilerplate.py</div>
-                            <div class="file-size">Code Sample · PY</div>
+                            <div class="file-size">Code Sample · PY &nbsp;·&nbsp; Coming Soon</div>
                         </div>
-                        <span class="file-dl-btn" style="opacity:0.45;cursor:default;">Coming Soon</span>
+                        <span class="file-dl-btn" style="opacity:0.4;cursor:default;pointer-events:none;">Coming Soon</span>
                     </div>
-                    <div id="uploaded-files-container"></div>
                 </div>
             </div>
 
@@ -2482,6 +2485,26 @@
 
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeThought(); });
 
+        // ── Admin mode toggle (only you know to click it) ──
+        let adminUnlocked = false;
+        function toggleAdminMode() {
+            if (!adminUnlocked) {
+                const pw = prompt('Enter admin password:');
+                // Change "praneeth2026" to any password you want
+                if (pw === 'praneeth2026') {
+                    adminUnlocked = true;
+                    document.getElementById('thought-composer-panel').style.display = 'block';
+                    document.getElementById('admin-gate-btn').style.display = 'none';
+                } else if (pw !== null) {
+                    alert('Incorrect password.');
+                }
+            } else {
+                adminUnlocked = false;
+                document.getElementById('thought-composer-panel').style.display = 'none';
+                document.getElementById('admin-gate-btn').style.display = 'inline-flex';
+            }
+        }
+
         // Show/hide custom category input
         document.getElementById('composer-cat').addEventListener('change', function() {
             const customInput = document.getElementById('composer-custom-cat');
@@ -2539,72 +2562,8 @@
             addActivityItem(`Posted new thought: <strong>"${title.slice(0,40)}${title.length>40?'...':''}"</strong>`, 'amber');
         }
 
-        // ══ FILE UPLOAD & DOWNLOAD ══
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const uploadedContainer = document.getElementById('uploaded-files-container');
         const activityFeed = document.getElementById('activity-feed');
 
-        function getFileIcon(name) {
-            const ext = name.split('.').pop().toLowerCase();
-            if (['pdf'].includes(ext)) return { cls:'pdf', icon:'📕' };
-            if (['doc','docx'].includes(ext)) return { cls:'doc', icon:'📄' };
-            if (['png','jpg','jpeg','gif','webp','svg'].includes(ext)) return { cls:'img', icon:'🖼️' };
-            if (['py','js','ts','cpp','c','java','html','css','json','ipynb'].includes(ext)) return { cls:'code', icon:'💻' };
-            return { cls:'other', icon:'📎' };
-        }
-
-        function formatSize(b) {
-            if (b < 1024) return b + ' B';
-            if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-            return (b/1048576).toFixed(1) + ' MB';
-        }
-
-        function addActivityItem(html, dotCls) {
-            const now = new Date();
-            const t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) + ' · ' + now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.style.animation = 'slideIn 0.35s ease';
-            item.innerHTML = `
-                <div class="activity-dot-wrap"><div class="activity-dot ${dotCls}"></div></div>
-                <div class="activity-right">
-                    <div class="activity-action">${html}</div>
-                    <div class="activity-time">${t}</div>
-                </div>`;
-            activityFeed.insertBefore(item, activityFeed.firstChild);
-        }
-
-        function renderFile(file, url) {
-            const { cls, icon } = getFileIcon(file.name);
-            const wrapper = document.createElement('div');
-            wrapper.className = 'posted-file-item';
-            const uid = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-            wrapper.id = uid;
-            wrapper.innerHTML = `
-                <div class="file-type-icon ${cls}">${icon}</div>
-                <div class="file-info">
-                    <div class="file-name" title="${file.name}">${file.name}</div>
-                    <div class="file-size">${formatSize(file.size)} · ${file.name.split('.').pop().toUpperCase()}</div>
-                </div>
-                <a href="${url}" download="${file.name}" class="file-dl-btn">⬇ Download</a>
-                <button class="file-remove-btn" onclick="removeFile('${uid}','${file.name}')" title="Remove">✕</button>`;
-            uploadedContainer.prepend(wrapper);
-            addActivityItem(`Uploaded <strong>${file.name}</strong> — available for download`, 'mint');
-        }
-
-        function removeFile(id, name) {
-            const el = document.getElementById(id);
-            if (el) { el.style.opacity='0'; el.style.transform='translateX(12px)'; el.style.transition='all 0.3s'; setTimeout(()=>el.remove(),300); }
-            addActivityItem(`Removed <strong>${name}</strong>`, 'red');
-        }
-
-        function handleFiles(files) { Array.from(files).forEach(f => renderFile(f, URL.createObjectURL(f))); }
-
-        fileInput.addEventListener('change', e => handleFiles(e.target.files));
-        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-        dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
 
 
 
